@@ -1,0 +1,5 @@
+<apex:page showHeader="false"
+  standardStylesheets="false"
+  >
+	<c:CCFooter />
+</apex:page>

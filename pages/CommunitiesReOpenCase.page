@@ -1,0 +1,21 @@
+<apex:page standardController="Case" extensions="ReOpenCaseExtension">
+<c:CommunitiesReOpenCase />
+	<apex:form >
+		<apex:pageblock title="Reopen Case: {!case.CaseNumber}">
+			<apex:pageMessages ></apex:pageMessages>
+			<apex:pageblocksection columns="1" rendered="{!canReopen}">
+				<apex:pageblocksectionitem >
+					<apex:outputlabel value="Comment" for="Comment"/>
+					<apex:outputpanel layout="block" styleClass="requiredInput">
+						<apex:outputpanel layout="block" styleClass="requiredBlock"/>
+						<apex:inputtextarea id="Comment" value="{!comment.CommentBody}" cols="100" rows="5"/>
+					</apex:outputpanel>
+				</apex:pageblocksectionitem>
+			</apex:pageblocksection>
+			<apex:pageblockButtons >
+				<apex:commandbutton action="{!doSave}" value="Save" disabled="{!NOT(canReopen)}"/>
+				<apex:commandbutton action="{!cancel}" value="Cancel"/>
+			</apex:pageblockButtons>
+		</apex:pageblock>
+	</apex:form>
+</apex:page>

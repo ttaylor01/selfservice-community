@@ -1,0 +1,9 @@
+<apex:page standardController="Case" extensions="CommunitiesArchiveCaseExtension" action="{!doSave}">
+<c:CommunitiesReOpenCase />
+	<apex:sectionHeader title="Archive Case Messages!"/>
+	<apex:pageBlock >
+		<apex:pageBlockSection >
+			<apex:pageMessages />
+		</apex:pageblockSection>
+	</apex:pageBlock>
+</apex:page>

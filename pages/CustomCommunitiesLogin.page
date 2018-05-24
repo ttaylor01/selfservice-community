@@ -1,0 +1,42 @@
+<apex:page docType="html-5.0" controller="CommunitiesLoginController" showHeader="false" sidebar="false" standardStylesheets="false">
+<!-- controller="CustomCommunitiesLoginController"  -->
+	<c:acs_ElegantLoginCSS />
+	<apex:includeScript value="{!$Resource.acs_ElegantLoginJS}"/>
+	<div class="container">
+		<div class="centerContent">
+			<div id="loginHeader">
+				<div class="loginLogoPrivacy">&nbsp;</div>
+			</div>
+			<div id="elegantPanel">  
+				<apex:form id="id3" styleClass="loginContent">
+                    <apex:pageMessages id="error"/>
+
+					<label>User ID:</label>
+                    <apex:inputText value="{!username}" styleClass="userId" id="userId"/>
+					<div >
+						<label>Password:</label>
+						<span class="w">
+		                    <apex:inputSecret value="{! password }" styleClass="input loginPassword" id="password"/>
+						</span>
+					</div>
+					<div class="buttons">
+						<div class="arrgh">
+							<apex:outputLink value="{!$Site.BaseUrl}/ForgotPassword">Help! I can't log in!</apex:outputLink>
+							<span>1.877.565.5457</span>
+						</div>
+	                    <apex:commandButton action="{!login}" value="Log in" styleClass="loginButton btn btn-warning btn-large" id="loginFormSubmit"/>
+					</div>
+					<div class="address">
+						<br/>
+						Availity LLC<br/>
+						10752 Deerwood Park Blvd Suite 110<br/>
+						Jacksonville, FL 32256<br/>
+						United States of America
+					</div>
+				</apex:form>
+			</div>
+			<div id="footer" style="display:none"></div>
+			<div id="passwordExpiry"></div>
+		</div>
+	</div>
+</apex:page>

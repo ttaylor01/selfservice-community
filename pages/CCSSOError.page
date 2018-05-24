@@ -1,0 +1,21 @@
+<apex:page title="{!$Label.site.site_login}" showHeader="false" sidebar="false" standardStylesheets="false">
+    <c:acs_ElegantLoginCSS />
+    <div class="containerWide">
+        <div class="centerContent">
+            <div id="loginHeader">
+                <div class="loginLogoPrivacy">&nbsp;</div>
+            </div>
+            <div id="elegantPanel">
+                <apex:form id="theForm" styleClass="loginContent">
+                    <h3>Error</h3>
+                    <p>
+                    A system issue has occurred because you’ve accessed Support for more than one organization during your current Web Portal session. 
+                    To open a Support case, close the current tab and select a different organization.  
+                    If you’re still unable to open a Support case, contact Availity Client Services at 1.800.282.4548.
+                    </p>
+                </apex:form>
+            </div>      
+            <div id="footer" style="display:none"></div>
+        </div>
+    </div>
+</apex:page>

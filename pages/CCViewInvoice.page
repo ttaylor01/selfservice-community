@@ -1,0 +1,218 @@
+<apex:page cache="false" showHeader="false" renderAs="pdf" controller="CCViewInvoice">
+   <head>
+    <style type="text/css">
+        .tableRow1{
+            padding: 5px 8px;               
+            height: 15px;
+            background-color:  #EDEDED;
+        }
+        .tableRow2{
+            padding: 5px 8px;               
+            height: 15px;
+            background-color: white;
+        }
+        .totHeight{
+            height: 8px; 
+        }
+        .totRow{
+            text-align:left;
+            text-indent:50px;
+            font-weight:bold;
+            font-size:15px;
+            color:white;
+            background-color:    #CFCFCF;
+            height: 12px;
+        }
+        .totRowNoBG{
+            text-align:left;
+            text-indent:50px;
+            font-weight:normal;
+            font-size:15px;
+            height: 12px;
+        }
+        .totNor{
+            text-align:right;
+            font-size:13px;
+            height: 18px;
+        }   
+        .totNorLab{
+            text-align:left;
+            font-size:13px;
+            height: 18px;
+        }   
+        .totValRow{
+            text-align:right;
+            font-weight:bold;
+            color:white;
+            background-color:   #CFCFCF;
+            font-size:15px;
+            height: 13px;
+        }
+        .totValRowNoBG{
+            text-align:right;
+            font-weight:normal;
+            font-size:15px;
+            height: 13px;
+        }
+        .totValRowLab{
+            text-align:left;
+            font-weight:bold;
+            color:white;
+            background-color:    #E5E5E5;
+            font-size:15px;
+            height: 13px;
+        }
+        .chead{
+            text-align:center;
+            border-color:#00A884;
+        }
+        
+    </style>
+    </head>  
+    <apex:form >          
+            <table width="100%">
+                <tr width="100%" height="50px">
+                    <td align="left">
+	                    <apex:image id="availityLogo" value="{!$Resource.acs_AvailityLogo}"/>
+                    </td>  
+                    <td align="right">
+                        <apex:outputText value="INVOICE" style="font-size:40px; font-family:sans-serif; color:green"/>
+                    </td>
+                </tr>
+            </table>
+<br/><br/><br/>
+            <table width="100%">
+                <tr width="100%">
+                    <td align="left" valign="top">
+
+			            <table width="100%">
+			                <tr>
+			                    <td align="left">
+			                    	<b>{!invoice.Zuora__BillingAccount__r.Name}</b>
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="left">
+			                    	{!invoice.Zuora__BillingAccount__r.Zuora__BillToName__c}
+			                    </td>
+			                </tr>
+			                <tr>
+			                    <td align="left">
+			                    	{!invoice.Zuora__BillingAccount__r.Zuora__BillToAddress1__c}
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="left">
+			                    	{!invoice.Zuora__BillingAccount__r.Zuora__BillToAddress2__c}
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="left">
+			                    	{!invoice.Zuora__BillingAccount__r.Zuora__BillToCity__c}, {!invoice.Zuora__BillingAccount__r.Zuora__BillToState__c} {!invoice.Zuora__BillingAccount__r.Zuora__BillToPostalCode__c}
+			                    </td>  
+			                </tr>
+			            </table>
+
+                    </td>  
+                    <td align="right">
+			            <table width="100%">
+			                <tr>
+			                    <td align="right">
+			                    	<b>Invoice No:</b>
+			                    </td>  
+			                    <td align="left">
+			                    	{!invoice.Name}
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="right">
+			                    	<b>Customer No:  </b>
+			                    </td>
+			                    <td align="left">
+			                    	{!invoice.Zuora__BillingAccount__r.Zuora__AccountNumber__c}
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="right">
+			                    	<b>Due Date:  </b>
+			                    </td>  
+			                    <td align="left">
+			                    	<apex:outputText value="{0,date,MM/dd/yyyy}">
+			                    		<apex:param value="{!invoice.Zuora__DueDate__c}"/>
+			                    	</apex:outputText>
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="right" valign="top">
+			                    	<b>Terms:  </b>
+			                    </td>  
+			                    <td align="left">
+			                    	{!invoice.Zuora__PaymentTerm__c}<br/>
+			                    	{!invoice.Zuora__BillingAccount__r.Zuora__DefaultPaymentMethod__c}
+			                    </td>  
+			                </tr>
+			            </table>
+                    </td>
+                </tr>
+            </table>
+<br/><br/>
+        <apex:dataTable columns="6" value="{!invoiceItems}" var="i" width="100%" border="1" rules="rows" rowClasses="tableRow1, tableRow2" headerClass="chead" style="border-color:#00A884">
+            <apex:column width="25%" headerValue="Trans Type" headerClass="chead" > 
+                     <apex:outputLabel value="{!i.productName}" />              
+            </apex:column>
+            <apex:column html-align="center" width="25%" headerValue="Site Name" headerClass="chead"> 
+                    <apex:outputLabel value="{!invoice.Zuora__BillingAccount__r.Name}" />
+            </apex:column>
+            <apex:column html-align="center" width="17%" headerValue="Period" headerClass="chead">
+                   <apex:outputLabel value="{!i.serviceStartDate}" /> - <br/>
+                   <apex:outputLabel value="{!i.serviceEndDate}" />
+            </apex:column>
+            <apex:column html-align="center" width="14%" headerValue="Units/Counts" headerClass="chead">
+                    <apex:outputText value="{!i.quantity}"/>
+            </apex:column>
+            <apex:column html-align="center" width="8%" headerValue="Rate" headerClass="chead">
+                    <apex:outputLabel value="{!i.unitPrice}"/>
+            </apex:column>            
+            <apex:column html-align="center" width="10%" headerValue="Amount" headerClass="chead">
+                    <apex:outputLabel value="{!i.chargeAmount}"/>
+            </apex:column>            
+        </apex:dataTable>               
+
+    </apex:form>
+
+            <table width="100%">
+                <tr width="100%">
+                    <td align="right" valign="top">
+
+			            <table width="100%" align="right">
+			                <tr>
+			                    <td align="right" width="90%">
+			                    	<b>SUB TOTAL:</b>
+			                    </td>  
+			                    <td align="center" width="10%">
+			                    	{!subTotalAmount}
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="right">
+			                    	<b>TAX:  </b>
+			                    </td>
+			                    <td align="center">
+			                    	{!taxAmount}
+			                    </td>  
+			                </tr>
+			                <tr>
+			                    <td align="right">
+			                    	<b>TOTAL:  </b>
+			                    </td>  
+			                    <td align="center">
+			                    	{!totalAmount}
+			                    </td>  
+			                </tr>
+			            </table>
+
+                    </td>
+                </tr>
+            </table>
+
+</apex:page>
