@@ -1,0 +1,25 @@
+<apex:page title="{!$Label.site.site_login}" showHeader="false" sidebar="false" standardStylesheets="false">
+    <c:acs_ElegantLoginCSS />
+    <div class="container">
+        <div class="centerContent">
+            <div id="loginHeader">
+                <div class="loginLogoPrivacy">&nbsp;</div>
+            </div>
+            <div id="elegantPanel">  
+                <apex:form id="theForm" styleClass="loginContent">
+                    <h3>Log off Successful</h3>
+                    <p>Thank you for contacting support.</p>
+                    <div class="buttons">
+                        <div class="arrghRight">
+<!-- 
+                            <apex:outputLink value="{!$Site.BaseUrl}/CCLoginRouting">Log in again</apex:outputLink>
+                            <apex:outputLink value="https://apps.availity.com/availity/web/public.elegant.login">Log in again</apex:outputLink>
+ -->
+                        </div>
+                    </div>
+                </apex:form>
+            </div>      
+            <div id="footer" style="display:none"></div>
+        </div>
+    </div>
+</apex:page>

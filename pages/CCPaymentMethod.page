@@ -1,0 +1,307 @@
+<apex:page controller="CCPaymentMethod" tabStyle="Billing__tab" sidebar="false" showHeader="true" cache="false" docType="html-5.0">
+    <style>
+        #wrapper {
+            width: 800px;
+            overflow: hidden; /* will contain if #first is longer than #second */
+        }
+        #first {
+            float:left; /* add this */
+            max-width: 540px;
+            min-width: 500px;
+            /*
+            height: 500px;
+            */
+            margin-right: 10px;
+            display: table-cell;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        #second {
+            overflow: hidden; /* if you don't want #second to wrap below #first */
+        }
+        .container {
+            overflow:auto;
+            /*
+            height:380px;
+            */
+        }
+        .smallInput { width: 100px; }
+        .mediumInput { width: 250px; }
+        .longInput { width: 400px; }
+        
+        .cTable input {
+            vertical-align:middle;
+        }
+        .msg {
+            font-size:10px;
+            font-weight:bold;
+        }
+        hr { 
+            display: block;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            margin-left: auto;
+            margin-right: auto;
+            border-style: inset;
+            border-width: 1px;
+        }
+
+        td { 
+            padding: 5px;
+        }
+    </style>
+
+<apex:form id="formId">
+<div id="wrapper">
+    <div id="first">
+        <apex:pageBlock title="Payment Methods" id="paymentmethods">
+            <apex:outputPanel layout="block" styleClass="container">
+            <apex:pageMessages id="message"/>
+                <!-- Credit Card Section -->
+                <apex:outputPanel id="createcreditcare"><apex:commandLink value="Add Credit Card" action="{!toggleNewCreditCardMode}" style="float:right;"/></apex:outputPanel>
+                <apex:pageBlockTable value="{!creditCards}" var="c">
+                    <apex:column width="65%"  headerValue="Credit Cards">
+                        <apex:image id="theImage" value="{!c.image}"/>&nbsp;&nbsp;<apex:outputText value="{!c.creditCardNumber}"/>
+                    </apex:column>
+                    <apex:column width="10%" headerValue="Expires" value="{!c.expires}"/>
+                    <apex:column width="25%">
+                        <apex:commandButton value="Edit" action="{!editCreditCardOn}" rerender="formId">
+                            <apex:param name="pmId" value="{!c.zuoraId}" />
+                        </apex:commandButton>
+                        <apex:commandButton value="Remove" action="{!removePaymentMethod}" rerender="formId">
+                            <apex:param name="pmId" value="{!c.zuoraId}" />
+                        </apex:commandButton>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <!-- CREATE NEW Credit Card Section -->
+                <apex:pageBlock title="New Credit Card" rendered="{!newCreditCard}" id="ccMethod" mode="edit">
+                    <apex:pageBlockButtons id="operations">
+                        <apex:commandButton value="Save" action="{!savePaymentMethod}" rendered="{!acceptedTAA}"/>
+                        <apex:commandButton value="Cancel" action="{!toggleNewCreditCardMode}"/>
+                    </apex:pageBlockButtons>
+                    <apex:pageBlockSection title="Payment Options" columns="1">
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="Card Type" for="cardtype"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:selectRadio id="cardtype" value="{!ccMethodUI.creditCardType}" styleClass="cTable">
+                                    <apex:selectOptions value="{!ccMethodUI.typeOptions}"/>
+                                </apex:selectRadio>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="Card Number" for="cardnumber"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:inputText id="cardnumber" value="{!ccMethodUI.creditCardNumber}"/>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Expiration Date" for="expirationDate"/>
+                            <apex:panelGrid columns="3">
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:selectList size="1" id="expirationDate" value="{!ccMethodUI.creditCardExpirationMonth}">
+                                        <apex:selectOptions value="{!ccMethodUI.monthOptions}"/>
+                                    </apex:selectList>
+                                </apex:outputpanel>
+                                &nbsp;/&nbsp;&nbsp;
+                                <apex:selectList size="1" value="{!ccMethodUI.creditCardExpirationYear}">
+                                    <apex:selectOptions value="{!ccMethodUI.yearOptions}"/>
+                                </apex:selectList>
+                            </apex:panelGrid>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="CVV" for="cvv"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:inputText id="cvv" value="{!ccMethodUI.creditCardSecurityCode}"/>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="Cardholder Name" for="cardholder"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:inputText id="cardholder" value="{!ccMethodUI.creditCardHolderName}"/>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:inputText label="Address 1" value="{!ccMethodUI.creditCardAddress1}"/>
+                        <apex:inputText label="Address 2" value="{!ccMethodUI.creditCardAddress2}"/>
+                        <apex:inputText label="City" value="{!ccMethodUI.creditCardCity}"/>
+                        <apex:selectList size="1" id="states" value="{!ccMethodUI.creditCardState}" label="State">
+                            <apex:selectOptions value="{!states}"/>
+                        </apex:selectList>
+                        <apex:inputText label="Postal Code" value="{!ccMethodUI.creditCardPostalCode}"/>
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection title="Terms and Agreement" columns="1" rendered="{!NOT(isHeWUser)}">
+                        <apex:pageblocksectionitem >
+                            <apex:outputPanel >
+                                <table >
+                                    <tr>
+                                        <td style="vertical-align:baseline">
+                                            <apex:inputCheckbox id="taa" value="{!taaInput}">
+                                                <apex:actionSupport event="onchange" action="{!acceptTermsAndAgreement}" rerender="ccMethod" />
+                                            </apex:inputCheckbox>
+                                            <apex:outputLabel for="taa">Check here to indicate that you have read and you agree to the following hyperlinked agreement:  Authorization Agreement For Automatic Withdrawal of Payments.</apex:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="vertical-align:baseline">
+                                            <apex:outputLink value="/selfservice/articles/Agreements/Billing-Terms-And-Agreement" target="_blank">view the Terms and Agreements</apex:outputLink>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </apex:outputPanel>
+                        </apex:pageblocksectionitem>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+                <!-- EDIT Credit Card Section -->
+                <apex:pageBlock title="Edit Credit Card" rendered="{!editCreditCard}" id="editCCMethod">
+                    <apex:pageBlockButtons id="operations">
+                        <apex:commandButton value="Save" action="{!editPaymentMethod}"/>
+                        <apex:commandButton value="Cancel" action="{!editCreditCardOff}"/>
+                    </apex:pageBlockButtons>
+                    <apex:pageBlockSection title="Payment Options" columns="1">
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="Card Type" for="cardtype"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:selectRadio id="cardtype" value="{!ccMethodUI.creditCardType}" styleClass="cTable">
+                                    <apex:selectOptions value="{!ccMethodUI.typeOptions}"/>
+                                </apex:selectRadio>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:outputText label="Card Number" value="{!ccMethodUI.creditCardNumber}"/>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Expiration Date" for="expirationDate"/>
+                            <apex:panelGrid columns="3">
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:selectList size="1" id="expirationDate" value="{!ccMethodUI.creditCardExpirationMonth}">
+                                        <apex:selectOptions value="{!ccMethodUI.monthOptions}"/>
+                                    </apex:selectList>
+                                </apex:outputpanel>
+                                &nbsp;/&nbsp;&nbsp;
+                                <apex:selectList size="1" value="{!ccMethodUI.creditCardExpirationYear}">
+                                    <apex:selectOptions value="{!ccMethodUI.yearOptions}"/>
+                                </apex:selectList>
+                            </apex:panelGrid>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="CVV" for="cvv"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:inputText id="cvv" value="{!ccMethodUI.creditCardSecurityCode}"/>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:pageblocksectionitem >
+                            <apex:outputlabel value="Cardholder Name" for="cardholder"/>
+                            <apex:outputpanel layout="block" styleClass="requiredInput">
+                                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                <apex:inputText id="cardholder" value="{!ccMethodUI.creditCardHolderName}"/>
+                            </apex:outputpanel>
+                        </apex:pageblocksectionitem>
+                        <apex:inputText label="Address 1" value="{!ccMethodUI.creditCardAddress1}"/>
+                        <apex:inputText label="Address 2" value="{!ccMethodUI.creditCardAddress2}"/>
+                        <apex:inputText label="City" value="{!ccMethodUI.creditCardCity}"/>
+                        <apex:inputText label="State" value="{!ccMethodUI.creditCardState}"/>
+                        <apex:inputText label="Postal Code" value="{!ccMethodUI.creditCardPostalCode}"/>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+
+                <br/>
+
+                <!-- ACH Section -->
+<!--
+-->
+                <apex:outputPanel rendered="{!isHeWUser}">
+                    <apex:outputPanel id="createach"><apex:commandLink value="Add Automated Clearing House" action="{!toggleNewAchMode}" style="float:right;"/></apex:outputPanel>
+                    <apex:pageBlockTable value="{!achs}" var="a">
+                        <apex:column width="75%" headerValue="Automated Clearing House">
+                            <apex:outputText value="{!a.achBankName}"/>&nbsp;&nbsp;<apex:outputText value="{!a.achAccountNumber}"/>
+                        </apex:column>
+                        <apex:column width="25%">
+                            <apex:commandButton value="Remove" action="{!removePaymentMethod}" rerender="formId">
+                                <apex:param name="pmId" value="{!a.zuoraId}" />
+                            </apex:commandButton>
+                        </apex:column>
+                    </apex:pageBlockTable>
+                    <apex:pageBlock title="ACH" rendered="{!newAch}" id="achMethod" mode="edit">
+                        <apex:pageBlockButtons id="operations">
+                            <apex:commandButton value="Save" action="{!savePaymentMethod}" rendered="{!acceptedTAA}"/>
+                            <apex:commandButton value="Cancel" action="{!toggleNewAchMode}"/>
+                        </apex:pageBlockButtons>
+                        <apex:pageBlockSection title="Payment Options" columns="1">
+                            <apex:pageblocksectionitem >
+                                <apex:outputlabel value="Name on Account" for="accountname"/>
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:inputText id="accountname" value="{!achMethodUI.achAccountName}"/>
+                                </apex:outputpanel>
+                            </apex:pageblocksectionitem>
+                            <apex:pageblocksectionitem >
+                                <apex:outputlabel value="Bank Routing Number" for="abarouting"/>
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:inputText id="abarouting" value="{!achMethodUI.achAbaCode}"/>
+                                </apex:outputpanel>
+                            </apex:pageblocksectionitem>
+                            <apex:pageblocksectionitem >
+                                <apex:outputlabel value="Bank Account Number" for="accountnumber"/>
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:inputText id="accountnumber" value="{!achMethodUI.achAccountNumber}"/>
+                                </apex:outputpanel>
+                            </apex:pageblocksectionitem>
+                            <apex:pageblocksectionitem >
+                                <apex:outputlabel value="Account Type" for="accounttype"/>
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:selectList size="1" value="{!achMethodUI.achAccountType}" id="accounttype">
+                                        <apex:selectOptions value="{!achMethodUI.typeOptions}"/>
+                                    </apex:selectList>
+                                </apex:outputpanel>
+                            </apex:pageblocksectionitem>
+                            <apex:pageblocksectionitem >
+                                <apex:outputlabel value="Bank Name" for="bankname"/>
+                                <apex:outputpanel layout="block" styleClass="requiredInput">
+                                    <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+                                    <apex:inputText id="bankname" value="{!achMethodUI.achBankName}"/>
+                                </apex:outputpanel>
+                            </apex:pageblocksectionitem>
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection title="Terms and Agreement" columns="1" rendered="{!NOT(isHeWUser)}">
+                            <apex:pageblocksectionitem >
+                                <apex:outputPanel >
+                                    <table >
+                                        <tr>
+                                            <td style="vertical-align:baseline">
+                                                <apex:inputCheckbox id="taa" value="{!taaInput}">
+                                                    <apex:actionSupport event="onchange" action="{!acceptTermsAndAgreement}" rerender="achMethod" />
+                                                </apex:inputCheckbox>
+                                                <apex:outputLabel for="taa">Check here to indicate that you have read and you agree to the following hyperlinked agreement:  Authorization Agreement For Automatic Withdrawal of Payments.</apex:outputLabel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="vertical-align:baseline">
+                                                <apex:outputLink value="/selfservice/articles/Agreements/Billing-Terms-And-Agreement" target="_blank">view the Terms and Agreements</apex:outputLink>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            </apex:pageblocksectionitem>
+                        </apex:pageBlockSection>
+                    </apex:pageBlock>
+<!--
+-->
+                </apex:outputPanel>
+                <br/>
+                <apex:outputPanel id="goBack" layout="block" style="position:relative;text-align:center;"><apex:commandButton value="Return" action="{!goBack}" style="position:relative;"/></apex:outputPanel>
+            </apex:outputPanel>
+        </apex:pageBlock>
+
+    </div>
+</div>
+</apex:form>
+
+</apex:page>

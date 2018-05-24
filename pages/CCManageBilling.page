@@ -1,0 +1,116 @@
+<apex:page controller="CCManageBilling" tabStyle="Billing__tab" sidebar="false" showHeader="true" cache="false" docType="html-5.0">
+	<style>
+		.smallInput { width: 100px; }
+		.mediumInput { width: 250px; }
+		.longInput { width: 400px; }
+		
+        .cTable input {
+            vertical-align:middle;
+        }
+        .msg {
+			font-size:10px;
+			font-weight:bold;
+			color:#00A884;
+		}
+	</style>
+
+<apex:form id="formId">
+    <apex:pageBlock title="Invoices" rendered="{!AND(NOT(makePaymentMode))}"  id="invoices">
+        <apex:pageMessages id="message"/>
+
+	    <apex:outputPanel rendered="{!NOT(hasPaymentMethod)}">
+	        <table>
+	        	<tr>
+	        		<td align="left">
+						<apex:outputText value="You must define a Payment Method to apply a payment" styleClass="msg"/>&nbsp;&nbsp;
+						<apex:outputLink value="/selfservice/apex/CCPaymentMethod?id={!billingAccount.Zuora__Zuora_Id__c}&retUrl=/selfservice/apex/CCManageBilling?id={!billingAccount.Zuora__Zuora_Id__c}%26retUrl={!retUrl}" styleClass="msg">Manage Payment Methods</apex:outputLink>
+	        		</td>
+	        	</tr>
+	        	<tr><td></td></tr>
+			</table>
+	    </apex:outputPanel>
+
+        <apex:pageBlockButtons id="operations">
+            <apex:commandButton value="Make Payment" action="{!toggleMakePaymentMode}" disabled="{!IF(hasPaymentMethod, false,true)}"/>
+            <apex:commandButton value="Return" action="{!goBack}"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockTable value="{!invoices}" var="i">
+            <apex:column width="5%">
+			    <!-- This is our selected Boolean property in our wrapper class -->
+			    <apex:inputCheckbox value="{!i.selected}" rendered="{!AND(NOT(i.invoice.Zuora__Status__c != 'Posted'),i.invoice.Zuora__Balance2__c != 0)}"/>
+            </apex:column>
+            <apex:column width="10%" headerValue="Number" value="{!i.invoice.Name}"/>
+            <apex:column width="10%" headerValue="Balance" value="{!i.invoice.Zuora__Balance2__c}"/>
+            <apex:column width="10%" headerValue="Due Date" value="{!i.invoice.Zuora__DueDate__c}" style="{!IF(i.invoice.Zuora__DueDate__c <= TODAY(), 'color:red;', '')}"/>
+            <apex:column width="10%" headerValue="Invoice Date" value="{!i.invoice.Zuora__InvoiceDate__c}"/>
+            <apex:column width="10%" headerValue="Status" value="{!i.invoice.Zuora__Status__c}"/>
+            <apex:column width="10%" headerValue="Total Amount" value="{!i.invoice.Zuora__TotalAmount__c}"/>
+            <apex:column width="10%" headerValue="Tax Amount" value="{!i.invoice.Zuora__TaxAmount__c}"/>
+            <apex:column width="10%">
+				<apex:outputLink target="_blank" value="/selfservice/apex/CCViewInvoice?invId={!i.invoice.Zuora__Zuora_Id__c}" rendered="{!i.invoice.Zuora__Status__c != 'Draft'}">View Invoice(PDF)</apex:outputLink>
+            </apex:column>
+        </apex:pageBlockTable>
+        <apex:pageBlockTable value="{!total}" var="t">
+            <apex:column width="5%">
+            	<strong><apex:outputText value="TOTALS"/></strong>
+            </apex:column>
+            <apex:column width="10%" />
+            <apex:column width="10%" headerValue="" value="{!t.Zuora__Balance2__c}"/>
+            <apex:column width="10%"/>
+            <apex:column width="10%"/>
+            <apex:column width="10%"/>
+            <apex:column width="10%" headerValue="" value="{!t.Zuora__TotalAmount__c}"/>
+            <apex:column width="10%" headerValue="" value="{!t.Zuora__TaxAmount__c}"/>
+            <apex:column width="10%">
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+
+    <apex:pageBlock title="Payments" rendered="{!AND(NOT(makePaymentMode))}" id="payments_list">
+        <apex:pageBlockTable value="{!payments}" var="p">
+            <apex:column headerValue="Payment Number" value="{!p.Name}"/>
+            <apex:column headerValue="Amount" value="{!p.Zuora__Amount__c}"/>
+            <apex:column headerValue="Status" value="{!p.Zuora__Status__c}"/>
+            <apex:column value="{!p.Zuora__EffectiveDate__c}">
+            	<apex:facet name="header">
+            		<apex:commandLink action="{!sortByPaymentDate}"
+            			reRender="payments_list">Payment Date
+            		</apex:commandLink>
+            	</apex:facet>
+            </apex:column>
+            <apex:column headerValue="Payment Method" value="{!p.Zuora__PaymentMethod__c}"/>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+
+    <apex:pageBlock title="Make Payment" rendered="{!makePaymentMode}" id="makepayment">
+        <apex:pageMessages id="message"/>
+        <apex:pageBlockButtons id="operations">
+            <apex:commandButton value="Cancel" action="{!toggleMakePaymentMode}"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockTable value="{!invoicePayments}" var="i">
+            <apex:column width="10%" headerValue="Number" value="{!i.invoice.Name}"/>
+            <apex:column width="10%" headerValue="Balance" value="{!i.invoice.Zuora__Balance2__c}"/>
+            <apex:column width="10%" headerValue="Due Date" value="{!i.invoice.Zuora__DueDate__c}" style="{!IF(i.invoice.Zuora__DueDate__c <= TODAY(), 'color:red;', '')}"/>
+            <apex:column width="10%" headerValue="Invoice Date" value="{!i.invoice.Zuora__InvoiceDate__c}"/>
+            <apex:column width="10%" headerValue="Status" value="{!i.invoice.Zuora__Status__c}"/>
+            <apex:column width="10%" headerValue="Total Amount" value="{!i.invoice.Zuora__TotalAmount__c}"/>
+            <apex:column width="10%" headerValue="Tax Amount" value="{!i.invoice.Zuora__TaxAmount__c}"/>
+            <apex:column width="10%" headerValue="Payment Amount">
+                <apex:inputText id="amount" value="{!i.inputPaymentAmount}"/>
+            </apex:column>
+        </apex:pageBlockTable>
+	    <apex:pageBlockSection columns="2">
+	        <apex:pageblocksectionitem >
+	            <apex:outputlabel value="Payment Methods" for="paymentmethods"/>
+	            <apex:selectRadio id="paymentmethods" value="{!paymentMethodId}" styleClass="cTable" layout="pageDirection">
+	                <apex:selectOptions value="{!methods}"/>
+	            </apex:selectRadio>
+	        </apex:pageblocksectionitem>
+	        <apex:pageblocksectionitem dataStyle="vertical-align:middle">
+                <apex:commandButton value="Make Payment" action="{!sendPayment}" style="color:white;background:#00A884;"/>
+	        </apex:pageblocksectionitem>
+	    </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:form>
+
+</apex:page>

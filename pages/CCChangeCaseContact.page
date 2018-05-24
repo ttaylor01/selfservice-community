@@ -1,0 +1,39 @@
+<apex:page tabStyle="Support_Tickets__tab" controller="CCChangeCaseContact" sidebar="false" showHeader="true">
+
+<apex:sectionHeader title="Change Case Contact" subtitle="Case {!cs.CaseNumber}"/>
+
+<apex:form id="form_Upload">
+<apex:pageBlock title="Case Edit">
+	<apex:pageMessages />
+
+	<apex:pageBlockButtons >
+		<apex:commandButton action="{!back}" value="Cancel"/>
+	</apex:pageBlockButtons>
+
+	<apex:pageBlockSection title="Case Details" columns="1">
+		<apex:pageBlockSectionItem >
+			<apex:outputLabel value="Subject" for="subject"/>
+			<apex:outputField id="subject" value="{!cs.Subject}"/>
+		</apex:pageBlockSectionItem>
+	</apex:pageBlockSection>
+
+	<apex:outputPanel >
+		<apex:outputText style="font-weight:bold" value="Search"/>&nbsp;&nbsp;
+		<apex:inputText value="{!searchString}" label="Lookup"/>&nbsp;&nbsp;
+		<apex:commandButton value="Go!" action="{!doSearch}"/>
+	</apex:outputPanel>
+	<apex:pageblocksection title="Contacts" collapsible="false" columns="2">
+		<apex:pageBlockTable value="{!contactlist}" var="c">
+			<apex:column headerValue="Name">
+				<apex:commandLink value="{!c.Name}" action="{!doSave}" rerender="all">
+					<apex:param name="contactIdParam" value="{!c.id}" assignTo="{!contactIdChosen}"/>
+				</apex:commandLink>
+			</apex:column>
+		</apex:pageBlockTable>
+	</apex:pageblocksection>
+ 
+</apex:pageBlock>
+
+</apex:form>
+
+</apex:page>

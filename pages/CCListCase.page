@@ -1,0 +1,190 @@
+<apex:page controller="CCListCase" tabStyle="Support_Tickets__tab" sidebar="false" showHeader="true" cache="false" docType="html-5.0">
+	<apex:includeScript value="{!URLFOR($Resource.CCJQuery,'dist/jquery.min.js')}" />
+<c:CCSearchCSS />
+
+<style type="css/text">
+ </style>
+
+<div class="container">
+
+	<apex:sectionHeader title="Home" subtitle="Cases" />
+	<apex:form id="listCase">
+        <apex:actionFunction action="{!refreshList}" name="searchFunction" rerender="listofcases" status="fetchStatus"/>
+		<apex:outputPanel layout="block" styleClass="container">
+	        <table>
+	        	<tr>
+	        		<td>&nbsp;</td>
+	        		<td><strong>View</strong></td>
+	        		<td>
+						<apex:selectList size="1" id="viewSelected" value="{!listView}" onchange="searchFunction();" styleClass="form-control select2">
+							<apex:selectOptions value="{!views}"/>
+						</apex:selectList>
+                        <apex:commandButton id="btnRefresh" action="{!refreshList}" value="Go" status="fetchStatus"></apex:commandButton>
+	        		</td>
+	        	</tr>
+	        	<tr><td></td><td></td><td></td></tr>
+        	</table>
+       	</apex:outputPanel>
+	    <apex:pageBlock title="{!title}" id="listofcases">
+	        <apex:pageMessages id="message"/>
+
+			<apex:pageBlockButtons location="top">
+				<apex:commandButton styleClass="btn btn-primary" value="Create a New Case" action="{!createNewCase}"></apex:commandButton>
+			</apex:pageBlockButtons>
+            
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >
+	                <apex:panelGroup style="float: right;">
+						<div id="searchAskInputContainer">
+							<apex:inputtext id="searchStrId" value="{!searchStr}" html-placeholder="search keywords..." />
+							<a href="#" id="resetButton" style="display: inline;" class="reset" onclick="resetPrompt('{!$Component.searchStrId}'); return false;">Reset</a>
+						</div>
+<!-- 
+                        <apex:inputtext id="searchStrId" value="{!searchStr}" html-placeholder="search keywords..." onkeypress="enterPress(event,'{!$Component.searchStrId}')" style="border-radius: 10px;"></apex:inputtext>
+-->
+                        <apex:commandButton id="btnSearch" action="{!refreshList}" value="Search" status="fetchStatus" rerender="listofcases"/>
+                    </apex:panelGroup>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+	
+	        <apex:pageBlockTable value="{!cases}" var="c">
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="Subject" assignTo="{!sortField}" />
+							<apex:outputText value="Subject{!IF(SortField=='Subject',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.Subject}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="CaseNumber" assignTo="{!sortField}" />
+							<apex:outputText value="Case Number{!IF(SortField=='CaseNumber',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+<!-- 
+					<apex:outputLink value="/selfservice/apex/CCCaseDetail?id={!c.Id}&retUrl=/selfservice/apex/CCListCase&listView={!listView}">{!c.CaseNumber}</apex:outputLink>
+ -->
+					<apex:commandLink value="{!c.CaseNumber}" action="{!gotoCaseDetail}">
+						<apex:param name="recordTypeId" value="{!c.RecordTypeId}" assignTo="{!recordTypeId}"/>
+						<apex:param name="selectedId" value="{!c.Id}" assignTo="{!selectedId}"/>
+					</apex:commandLink>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="CreatedDate" assignTo="{!sortField}" />
+							<apex:outputText value="Date/Time Opened{!IF(SortField=='CreatedDate',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.CreatedDate}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="LastModifiedDate" assignTo="{!sortField}" />
+							<apex:outputText value="Last Modified Date{!IF(SortField=='LastModifiedDate',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.LastModifiedDate}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="Status" assignTo="{!sortField}" />
+							<apex:outputText value="Status{!IF(SortField=='Status',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.Status}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="CreatedBy.Alias" assignTo="{!sortField}" />
+							<apex:outputText value="Created By Alias{!IF(SortField=='CreatedBy.Alias',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.CreatedBy.Alias}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="Customer_Reference_Number__c" assignTo="{!sortField}" />
+							<apex:outputText value="My Ticket Number{!IF(SortField=='Customer_Reference_Number__c',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.Customer_Reference_Number__c}"/>
+				</apex:column>
+	            <apex:column headerValue="Availity Customer ID" value="{!c.CID_Identifier__c}"/>
+				<apex:column >
+					<apex:facet name="header">
+						<apex:commandLink action="{!sortToggle}" rerender="listofcases" status="fetchStatus">
+							<apex:param name="sortField" value="RecordTypeId" assignTo="{!sortField}" />
+							<apex:outputText value="Case Type{!IF(SortField=='RecordTypeId',IF(SortDirection='asc','▲','▼'),'')}" />
+						</apex:commandLink>
+					</apex:facet>
+					<apex:outputField value="{!c.Other_Case_Number__c}"/>
+				</apex:column>
+	        </apex:pageBlockTable>
+	        
+	        <apex:panelGrid columns="8">
+                <apex:selectList value="{!size}" multiselect="false" size="1" onchange="searchFunction();">
+                    <apex:selectOptions value="{!paginationSizeOptions}"/>
+                </apex:selectList>
+                 
+                <apex:commandButton status="fetchStatus" reRender="listofcases" value="First" action="{!setCon.first}" disabled="{!!setCon.hasPrevious}" title="First Page"/> 
+  
+                <apex:commandButton status="fetchStatus" reRender="listofcases" value="Previous" action="{!setCon.previous}" disabled="{!!setCon.hasPrevious}" title="Previous Page"/> 
+  
+                <apex:commandButton status="fetchStatus" reRender="listofcases" value="Next" action="{!setCon.next}" disabled="{!!setCon.hasNext}" title="Next Page"/> 
+  
+                <apex:commandButton status="fetchStatus" reRender="listofcases" value="Last" action="{!setCon.last}" disabled="{!!setCon.hasNext}" title="Last Page"/> 
+  
+                <apex:outputText >{!(setCon.pageNumber * size)+1-size}-{!IF((setCon.pageNumber * size)>noOfRecords, noOfRecords,
+                     (setCon.pageNumber * size))} of {!noOfRecords}
+                </apex:outputText> 
+                       
+                <apex:outputPanel >                      
+                    <apex:actionStatus id="fetchStatus" >
+                        <apex:facet name="start" >
+                          <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:outputPanel> 
+
+	        </apex:panelGrid>
+	    </apex:pageBlock>
+	</apex:form>
+
+</div> <!-- container -->
+
+<script>
+	// clears the search box and resets list
+	function resetPrompt(elementId) {
+		document.getElementById(elementId).value = "";
+		searchFunction();
+	}
+	function enterPress(e, elementId){
+		if(e.keyCode==13) {
+			if(e.preventDefault){ 
+				e.preventDefault();
+			} else {
+				e.returnValue=false;
+			}
+			validate(elementId);
+		}        
+	}
+	function validate(elementId) {
+		var inp = document.getElementById(elementId).value;
+		if(inp.length < 3){
+			alert('Your search term must have 3 or more characters.');
+			return false;
+		}
+		searchFunction();
+		return true;
+	}
+</script>
+
+</apex:page>

@@ -1,0 +1,275 @@
+<apex:page controller="CCBillingAccount" tabStyle="Billing__tab" sidebar="false" showHeader="true" cache="false" docType="html-5.0" >
+
+	<style>
+		#wrapper {
+		    width: 800px;
+		    overflow: hidden; /* will contain if #first is longer than #second */
+		}
+		#first {
+		    float:left; /* add this */
+		    max-width: 540px;
+			min-width: 500px;
+			height: 500px;
+			margin-right: 10px;
+			display: table-cell;
+			word-wrap: break-word;
+			word-break: break-word;
+		}
+		#second {
+		    overflow: hidden; /* if you don't want #second to wrap below #first */
+		}
+		.container {
+			overflow:auto;
+			height:380px;
+		}
+		.smallInput { width: 100px; }
+		.mediumInput { width: 250px; }
+		.longInput { width: 400px; }
+		
+        .cTable input {
+            vertical-align:middle;
+        }
+        .msg {
+			font-size:10px;
+			font-weight:bold;
+		}
+		hr { 
+		    display: block;
+		    margin-top: 0.5em;
+		    margin-bottom: 0.5em;
+		    margin-left: auto;
+		    margin-right: auto;
+		    border-style: inset;
+		    border-width: 1px;
+		} 
+	</style>
+
+<apex:form id="formId">
+<div id="wrapper">
+    <div id="first">
+		<apex:pageBlock title="Billing Account" rendered="{!OR(NOT(hasBillingAccount),NOT(hasBillingAccountAccess))}" id="nobillingaccount">
+	        <apex:pageMessages id="message"/>
+		</apex:pageBlock>
+
+    	<apex:pageBlock title="Billing Account" id="billingAccount" rendered="{!AND(NOT(editContactMode),NOT(editAccountMode),hasBillingAccount,hasBillingAccountAccess)}">
+			<apex:outputPanel layout="block" styleClass="container">
+		        <apex:pageMessages id="message"/>
+		        <table>
+		        	<tr>
+		        		<td><strong>Name</strong></td>
+		        		<td>
+		        			<apex:outputText value="{!zBillingAccount.name}"/>
+							&nbsp;&nbsp;<apex:outputLink value="/selfservice/apex/CCBillingAccountSelect">change</apex:outputLink>
+		        		</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Account Number</strong></td>
+		        		<td><apex:outputText value="{!zBillingAccount.accountNumber}"/></td>
+		        	</tr>
+		        	<tr>
+		        		<td></td>
+		        		<td></td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Auto Pay</strong></td>
+		        		<td><apex:inputcheckbox disabled="true" value="{!zBillingAccount.autoPay}"/></td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Default Payment Method</strong></td>
+		        		<td>
+		        			<apex:outputText value="{!zBillingAccount.paymentMethodString}" rendered="{!zBillingAccount.defaultPayment}" escape="false"/>
+						</td>
+		        	</tr>
+		        	<tr><td>&nbsp;</td><td></td></tr>
+		        	<tr>
+		        		<td align="left">
+		        			<apex:commandButton value="Edit" action="{!toggleEditAccountMode}" disabled="{!IF(hasPaymentMethod, false,true)}"/>
+		        			&nbsp;<apex:outputText value="{!IF(hasPaymentMethod, 'default payment options for this account','You must define a payment method')}" styleClass="msg"/>
+		        		</td>
+		        		<td></td>
+		        	</tr>
+		        	<tr><td>&nbsp;</td><td></td></tr>
+		        	<tr>
+		        		<td align="left" colspan="2">
+		        			<apex:outputText value="Tax Exemption Notice" styleClass="msg" rendered="{!isHeWUser}"/><br/>
+		        			<apex:outputText value="Does your organization qualify for a sales tax exemption?  If so, please send your exemption certificate via fax 904-538-5444 or email hewaccountsreceivable@availity.com" styleClass="msg" rendered="{!isHeWUser}"/>
+<!-- 
+		        			<apex:outputText value="Does your organization qualify for a sale tax exemption?  If so, please send your exemption certificate via fax to 904-XXX-XXXX or email Providerinvoicing@availity.com" styleClass="msg" rendered="{!NOT(isHeWUser)}"/>
+ -->
+		        		</td>
+		        	</tr>
+		        	<tr><td colspan="2"><hr/></td></tr>
+		        	<tr>
+		        		<td><strong>Payment Methods</strong></td>
+		        		<td><strong>Billing History</strong></td>
+		        	</tr>
+		        	<tr>
+		        		<td>
+							<apex:outputLink value="/selfservice/apex/CCPaymentMethod?id={!zBillingAccount.Id}&retUrl=/selfservice/apex/CCBillingAccount?id={!zBillingAccount.Id}">Manage Payment Methods</apex:outputLink>
+		        		</td>
+		        		<td>
+<!--							<apex:outputLink value="/selfservice/apex/CommunityAccountInfo">View Invoices/Payments</apex:outputLink><br/>  -->
+							<apex:outputLink value="/selfservice/apex/CCManageBilling?id={!zBillingAccount.Id}&retUrl=/selfservice/apex/CCBillingAccount?id={!zBillingAccount.Id}">Manage Billing</apex:outputLink>
+		        		</td>
+		        	</tr>
+		        </table>
+			</apex:outputPanel>
+    	</apex:pageBlock>
+
+		<apex:pageBlock title="Edit Contact" rendered="{!AND(editContactMode,hasBillingAccount,hasBillingAccountAccess)}" id="editbillingcontact" mode="edit">
+	        <apex:pageMessages id="message"/>
+		    <apex:pageBlockButtons id="operations">
+		        <apex:commandButton value="Save" action="{!editBillingContact}"/>
+		        <apex:commandButton value="Cancel" action="{!toggleEditContactMode}"/>
+		    </apex:pageBlockButtons>
+		    <apex:pageBlockSection columns="1">
+		        <apex:pageblocksectionitem >
+		            <apex:outputlabel value="First Name" for="firstname"/>
+		            <apex:outputpanel layout="block" styleClass="requiredInput">
+		                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+		                <apex:inputText id="firstname" value="{!inputContact.firstName}"/>
+		            </apex:outputpanel>
+		        </apex:pageblocksectionitem>
+		        <apex:pageblocksectionitem >
+		            <apex:outputlabel value="Last Name" for="lastname"/>
+		            <apex:outputpanel layout="block" styleClass="requiredInput">
+		                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+		                <apex:inputText id="lastname" value="{!inputContact.lastName}"/>
+		            </apex:outputpanel>
+		        </apex:pageblocksectionitem>
+		        <apex:pageblocksectionitem >
+		            <apex:outputlabel value="Email" for="email"/>
+		            <apex:outputpanel layout="block" styleClass="requiredInput">
+		                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+		                <apex:inputText id="email" value="{!inputContact.email}" styleClass="mediumInput"/>
+		            </apex:outputpanel>
+		        </apex:pageblocksectionitem>
+		        <apex:pageblocksectionitem >
+		            <apex:outputlabel value="Phone" for="phone"/>
+		            <apex:outputpanel layout="block" styleClass="requiredInput">
+		                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+		                <apex:inputText id="phone" value="{!inputContact.phone}"/>
+		            </apex:outputpanel>
+		        </apex:pageblocksectionitem>
+		        <apex:inputText id="address1" value="{!inputContact.address1}" label="Address 1" styleClass="mediumInput"/>
+		        <apex:inputText id="address2" value="{!inputContact.address2}" label="Address 2" styleClass="mediumInput"/>
+		        <apex:inputText id="city" value="{!inputContact.city}" label="City"/>
+		        <apex:selectList size="1" id="states" value="{!inputContact.state}" label="State">
+		            <apex:selectOptions value="{!states}"/>
+		        </apex:selectList>
+		        <apex:inputText label="Postal Code" value="{!inputContact.postalCode}"  styleClass="smallInput"/>
+		    </apex:pageBlockSection>
+		</apex:pageBlock>
+
+		<apex:pageBlock title="Billing Account" rendered="{!AND(editAccountMode,hasBillingAccount,hasBillingAccountAccess)}" id="editbillingaccount" mode="edit">
+	        <apex:pageMessages id="message"/>
+		    <apex:pageBlockButtons id="operations">
+		        <apex:commandButton value="Save" action="{!editBillingAccount}"/>
+		        <apex:commandButton value="Cancel" action="{!cancelEditAccountMode}"/>
+		    </apex:pageBlockButtons>
+		    <apex:pageBlockSection columns="1">
+		        <apex:pageblocksectionitem >
+		            <apex:outputlabel value="Name" for="name"/>
+	                <apex:outputText id="name" value="{!zBillingAccount.name}"/>
+		        </apex:pageblocksectionitem>
+        		<apex:inputcheckbox value="{!zBillingAccount.autoPay}" label="AutoPay"/>
+                <apex:pageblocksectionitem >
+                    <apex:outputlabel value="Payment Methods" for="paymentmethods"/>
+                    <apex:selectRadio id="paymentmethods" value="{!zBillingAccount.defaultPaymentMethodId}" styleClass="cTable" layout="pageDirection">
+                        <apex:selectOptions value="{!methods}"/>
+                    </apex:selectRadio>
+                </apex:pageblocksectionitem>
+		    </apex:pageBlockSection>
+		</apex:pageBlock>
+
+    </div>
+    <div id="second">
+    	<div>
+	        <apex:pageBlock title="Bill To Contact" id="billtocontact" rendered="{!AND(NOT(editContactMode),hasBillingAccount,hasBillingAccountAccess)}">
+		        <table>
+		        	<tr>
+		        		<td><strong>Name</strong></td>
+		        		<td>{!billToContact.firstName} {!billToContact.lastName}</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Email</strong></td>
+		        		<td>{!billToContact.email}</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Address</strong></td>
+		        		<td>{!billToContact.address1}</td>
+		        	</tr>
+		        	<tr>
+		        		<td></td>
+		        		<td>{!billToContact.address2}</td>
+		        	</tr>
+		        	<tr>
+		        		<td></td>
+		        		<td>{!billToContact.city}, {!billToContact.state} {!billToContact.postalCode}</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Phone</strong></td>
+		        		<td>{!billToContact.phone}</td>
+		        	</tr>
+		        	<tr>
+		        		<td align="left">
+		        			<apex:commandButton value="Edit" action="{!toggleEditContactMode}" rerender="formId">
+		        				<apex:param name="contactType" value="BillTo" />
+		        			</apex:commandButton>
+		        		</td>
+		        		<td></td>
+		        	</tr>
+		        </table>
+	        </apex:pageBlock>
+    	</div>
+    	<div>
+	        <apex:pageBlock title="Sold To Contact" id="soldToContact" rendered="{!AND(NOT(editContactMode),hasBillingAccount,hasBillingAccountAccess)}">
+		        <table>
+		        	<tr>
+		        		<td><strong>Name</strong></td>
+		        		<td>{!soldToContact.firstName} {!soldToContact.lastName}</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Email</strong></td>
+		        		<td>{!soldToContact.email}</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Address</strong></td>
+		        		<td>{!soldToContact.address1}</td>
+		        	</tr>
+		        	<tr>
+		        		<td></td>
+		        		<td>{!soldToContact.address2}</td>
+		        	</tr>
+		        	<tr>
+		        		<td></td>
+		        		<td>{!soldToContact.city}, {!soldToContact.state} {!soldToContact.postalCode}</td>
+		        	</tr>
+		        	<tr>
+		        		<td><strong>Phone</strong></td>
+		        		<td>{!soldToContact.phone}</td>
+		        	</tr>
+		        	<tr>
+		        		<td align="left">
+		        			<apex:commandButton value="Edit" action="{!toggleEditContactMode}" rerender="formId">
+		        				<apex:param name="contactType" value="SoldTo" />
+		        			</apex:commandButton>
+		        		</td>
+		        		<td></td>
+		        	</tr>
+		        </table>
+	        </apex:pageBlock>
+    	</div>
+    </div>
+</div>
+</apex:form>
+
+<!-- 
+	<apex:pageblock title="Payment Setup">
+		<input type="button" id="btn_submit" onclick="goToHPM2();return false;" value="Create Payment Method" />
+		<input type="button" id="btn_submit" onclick="goToHPM();return false;" value="Create Payment Method V1" />
+		<input type="button" id="btn_submit" onclick="goToPaymentMethod();return false;" value="Payment Method" />
+	</apex:pageblock>
+ -->
+
+</apex:page>

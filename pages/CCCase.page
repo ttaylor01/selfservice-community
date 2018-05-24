@@ -1,0 +1,392 @@
+<apex:page standardController="Case" extensions="CCCase" tabStyle="Support_Tickets__tab" sidebar="false" showHeader="true" cache="false" action="{!setEditVisibility}">
+	<apex:includeScript value="{!URLFOR($Resource.CCJQuery,'dist/jquery.min.js')}" />
+
+<style type="css/text">
+.solid {
+    border-style: solid;
+}
+</style>
+<div class="container">
+	<apex:PageMessages id="message"/>
+
+<apex:form id="newCase">
+
+	<apex:sectionHeader title="Case Edit" subtitle="{!title}"/>
+	<apex:pageBlock id="caseInformationBlock" mode="edit">
+
+		<apex:pageBlockSection collapsible="false" columns="1">
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel style="color:#00a884;">IMPORTANT</apex:outputLabel>
+                <apex:outputText value="Please limit your inquiry to one provider TIN/NPI per case."/>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection collapsible="false" columns="2">
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel >Contact Name</apex:outputLabel>
+				<apex:outputField value="{!contact.Name}"/>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel >Availity Customer ID</apex:outputLabel>
+				<apex:outputText value="{!cs.CID_Identifier__c}"/>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection collapsible="false" columns="2">
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="customerticketnumber">My Ticket Number</apex:outputLabel>
+				<apex:inputField id="customerticketnumber" value="{!cs.Customer_Reference_Number__c}" styleClass="form-control input-sm"/>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!NOT(aacVisibility)}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!aacVisibility}">
+				<apex:outputLabel for="affectedcustomerid">Affected Customer ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="affectedcustomerid" value="{!cs.Affected_Customer_ID__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem helptext="{!$ObjectType.Case.Fields.Alternate_Email__c.InlineHelpText}">
+				<apex:outputLabel for="alternatemail">Alternate Contact Email</apex:outputLabel>
+				<apex:inputField id="alternateemail" value="{!cs.Alternate_Email__c}" styleClass="form-control input-sm"/>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="alternatemail2">Alternate Contact Email 2</apex:outputLabel>
+				<apex:inputField id="alternateemail2" value="{!cs.Alternate_Email_2__c}" styleClass="form-control input-sm"/>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+
+		<apex:pageBlockButtons location="both">
+			<apex:commandButton value="Submit" action="{!Save}"/>
+			<apex:commandButton value="Submit & Add Attachment" action="{!SaveAndAddAttachment}"/>
+			<apex:commandButton value="Cancel" action="{!goBack}" immediate="true"/>
+		</apex:pageBlockButtons>
+
+	<apex:outputPanel id="reasonPanel" layout="block">
+		<apex:actionRegion >
+		<apex:pageBlockSection id="pgBlockSectionCaseReason" title="Case Reason" collapsible="false" columns="2" >
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="casereason">Case Reason</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="casereason" value="{!cs.Call_Reason__c}" >
+						<apex:actionSupport event="onchange" action="{!setEditVisibility}" rerender="reasonPanel" onComplete="rebuildDOM();" />
+					</apex:inputField>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="briefdescription">Brief Description</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	            <div id="dependentField">
+	                <apex:outputpanel layout="block" styleClass="default"/>
+					<apex:inputField id="briefdescription" value="{!cs.Brief_Description__c}" styleClass="form-control input-sm select2" >
+						<apex:actionSupport event="onchange" action="{!setEditVisibility}" rerender="reasonPanel" onComplete="rebuildDOM();" />
+					</apex:inputField>
+					<apex:inputHidden value="{!requireBriefDescription}" id="requireBriefDescription" html-class="hiddenDependent"/>
+	            </div>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="submissionmethod">Submission Method</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	            <div id="dependentField">
+	                <apex:outputpanel layout="block" styleClass="default"/>
+					<apex:inputField id="submissionmethod" value="{!cs.Submission_Method__c}" styleClass="form-control input-sm select2">
+						<apex:actionSupport event="onchange" action="{!setEditVisibility}" rerender="reasonPanel" onComplete="rebuildDOM();" />
+					</apex:inputField>
+					<apex:inputHidden value="{!requireSubmissionMethod}" id="requireSubmissionMethod" html-class="hiddenDependent"/>
+	            </div>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+		</apex:actionRegion>
+
+		<apex:pageBlockSection id="pgBlockSectionCaseInfo" title="Case Information" collapsible="false" columns="2" rendered="{!loginVisibility}">
+
+			<apex:pageBlockSectionItem rendered="{!loginVisibility}">
+				<apex:outputLabel for="userid">User ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="userid" value="{!cs.User_ID__c}" styleClass="form-control input-sm"  />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!loginVisibility}"></apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection id="pgBlockSectionPayerInfo" title="Payer Information" collapsible="false" columns="2" rendered="{!payerVisibility}">
+
+			<apex:pageBlockSectionItem rendered="{!payerNameIdVisibility}">
+				<apex:outputLabel for="payername">Payer Name</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="payername" value="{!cs.Payer_Name__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerNameIdVisibility}">
+				<apex:outputLabel for="payerid">Payer Id</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="payerid" value="{!cs.Payer_ID__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem >
+				<apex:actionRegion >
+				<apex:inputCheckbox id="governmentpayer" value="{!cs.Government_Payer__c}">
+					<apex:actionSupport event="onchange" action="{!setEditVisibility}" rerender="reasonPanel" onComplete="rebuildDOM();" />
+				</apex:inputCheckbox>
+				</apex:actionRegion>
+				<apex:outputLabel for="governmentpayer">Government Payer</apex:outputLabel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!NOT(ptanVisibility)}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!ptanVisibility}">
+				<apex:outputLabel for="providerptan">Provider ID/PTAN</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+				<apex:inputField id="providerptan" value="{!cs.PTAN_Identifier__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="volume">Estimated Monthly Volume</apex:outputLabel>
+				<apex:inputField id="volume" value="{!cs.Estimated_Monthly_Volume__c}" styleClass="form-control input-sm" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="address">Address</apex:outputLabel>
+				<apex:inputField id="address" value="{!cs.Address__c}" styleClass="form-control input-sm" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="city">City</apex:outputLabel>
+				<apex:inputField id="city" value="{!cs.City__c}" styleClass="form-control input-sm" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="state">State</apex:outputLabel>
+				<apex:inputField id="state" value="{!cs.State__c}" styleClass="form-control input-sm" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="zipcode">Zip Code</apex:outputLabel>
+				<apex:inputField id="zipcode" value="{!cs.Zip_Code__c}" styleClass="form-control input-sm" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="payerstates">Payer States</apex:outputLabel>
+				<apex:inputField id="payerstates" value="{!cs.Payer_States__c}" styleClass="form-control input-sm" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}">
+				<apex:outputLabel for="newpayertransaction">New Payer Transaction</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="newpayertransaction" value="{!cs.New_Payer_Transaction__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!payerRequestVisibility}"></apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection id="pgBlockSectionProviderInfo" title="Provider Information" collapsible="false" columns="2" rendered="{!providerVisibility}">
+
+			<apex:pageBlockSectionItem rendered="{!providerNameVisibility}">
+				<apex:outputLabel for="providername">Provider Name</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="providername" value="{!cs.Provider_Name__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!providerNameVisibility}"></apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!provIdVisibility}">
+				<apex:outputLabel for="providernpi">Provider NPI</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="providernpi" value="{!cs.NPI_Identifier__c}" styleClass="form-control input-sm" html-maxlength="10" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!provIdVisibility}">
+				<apex:outputLabel for="providertaxid">Provider Tax ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="providertaxid" value="{!cs.Tax_ID__c}" styleClass="form-control input-sm" html-maxlength="9" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!provIdVisibility}">
+				<apex:inputCheckbox id="atypicalprovider" value="{!cs.Atypical_Provider__c}"/>
+				<apex:outputLabel for="atypicalprovider">Atypical Provider</apex:outputLabel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!provIdVisibility}"></apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection id="pgBlockSectionTranInfo" title="Transaction Information" collapsible="false" columns="2" rendered="{!transactionVisibility}">
+
+			<apex:pageBlockSectionItem rendered="{!batchIdVisibility}">
+				<apex:outputLabel for="batchid">Availity Batch ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="batchid" value="{!cs.EDI_Batch_ID__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!patientVisibility}">
+				<apex:outputLabel for="patientname">Patient Name</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="patientname" value="{!cs.Patient_Name__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!webIdVisibility}">
+				<apex:outputLabel for="webtransactionid">Web Transaction ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="webtransactionid" value="{!cs.Web_Transaction_ID__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!memberVisibility}">
+				<apex:outputLabel for="memberid">Member ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="memberid" value="{!cs.Member_ID__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!rejectVisibility}">
+				<apex:outputLabel for="errormessage">Rejection/Error Message</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="errormessage" value="{!cs.EDI_Batch_Reject_Reason__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!svcDateVisibility}">
+				<apex:outputLabel for="dateofservice">Date of Service</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="dateofservice" value="{!cs.Date_of_Service__c}" styleClass="form-control input-sm" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem rendered="{!chargeAmtVisibility}">
+				<apex:outputLabel for="chargeamount">Charge Amount</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="chargeamount" value="{!cs.Charge_Amount__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!chargeAmtVisibility}"></apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection id="pgBlockSectionCheckInfo" title="Check Information" collapsible="false" columns="2" rendered="{!checkVisibility}">
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="checkdate">Check Date</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="checkdate" value="{!cs.Check_Date__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="checknumber">Check Number</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="checknumber" value="{!cs.Check_Number__c}" styleClass="form-control input-sm"/>	
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="checkamount">Check Amount</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="checkamount" value="{!cs.Check_Amount__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+			</apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+
+		<apex:pageBlockSection id="pgBlockSectionB2BInfo" title="B2B Transaction Information" collapsible="false" columns="2" rendered="{!b2bVisibility}">
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="b2bvendortransactionid">B2B Vendor Transaction ID</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="b2bvendortransactionid" value="{!cs.B2B_Vendor_Transaction_ID__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="b2btransactiondate">B2B Transaction Date</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="b2btransactiondate" value="{!cs.B2B_transaction_Date__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="b2btimeoftransaction">B2B Time of Transaction</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="b2btimeoftransaction" value="{!cs.B2B_Time_of_Transaction__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="b2bvendorerrorcode">B2B Vendor Error Code</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="b2bvendorerrorcode" value="{!cs.B2B_Vendor_Error_Code__c}" styleClass="form-control input-sm"/>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+	</apex:outputPanel> <!-- reason Panel -->
+
+		<apex:pageBlockSection id="pgBlockSectionDetails" title="Details" collapsible="false" columns="1" >
+
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="subject">Subject</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="subject" value="{!cs.Subject}" styleClass="form-control input-sm" style="width:85%;" />
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel for="description">Description</apex:outputLabel>
+	            <apex:outputpanel layout="block" styleClass="requiredInput">
+	                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+					<apex:inputField id="description" value="{!cs.Description}" styleClass="form-control input-sm" html-rows="3" style="width:95%;"  />
+	            </apex:outputpanel>
+			</apex:pageBlockSectionItem>
+
+		</apex:pageBlockSection>
+
+	</apex:pageBlock>
+
+</apex:form>
+
+
+</div> <!-- container -->
+
+<!-- Javascript -->
+<c:CCMutationJS />
+<script type="text/javascript">
+$(document).ready(function() {
+	registerMutations();
+});
+$( ".select2, .select2-multiple" ).select2({
+  placeholder: "",
+  allowClear: true
+});
+</script>
+
+</apex:page>

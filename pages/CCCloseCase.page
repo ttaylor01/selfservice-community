@@ -1,0 +1,49 @@
+<apex:page tabStyle="Support_Tickets__tab" controller="CCCloseCase" sidebar="false" showHeader="true">
+<style>
+	.msg {
+		font-size:10px;
+		font-weight:bold;
+	}
+</style>
+
+<apex:sectionHeader title="Close Case" subtitle="Case {!cs.CaseNumber}"/>
+
+<apex:form id="form_Upload">
+<apex:pageBlock title="Case Edit">
+	<apex:pageMessages />
+
+	<apex:pageBlockButtons >
+		<apex:commandButton id="submit" value="Submit" action="{!save}" />
+		<apex:commandButton action="{!back}" value="Cancel"/>
+	</apex:pageBlockButtons>
+
+	<apex:pageBlockSection title="Case Details" columns="1">
+  
+		<apex:pageBlockSectionItem >
+			<apex:outputLabel value="Subject" for="subject"/>
+			<apex:outputField id="subject" value="{!cs.Subject}"/>
+		</apex:pageBlockSectionItem>
+		<apex:pageBlockSectionItem >
+			<apex:outputLabel value="Status" for="status"/>
+			<apex:outputField id="status" value="{!cs.Status}"/>
+		</apex:pageBlockSectionItem>
+  
+	</apex:pageBlockSection>
+ 
+	<apex:pageBlockSection title="Comment Details" columns="1">
+  
+		<apex:pageBlockSectionItem >
+			<apex:outputLabel for="comment">Comment</apex:outputLabel>
+            <apex:outputpanel layout="block" styleClass="requiredInput">
+                <apex:outputpanel layout="block" styleClass="requiredBlock"/>
+				<apex:inputTextArea id="comment" value="{!body}" styleClass="form-control input-sm" rows="10" style="width:80%;"/>
+            </apex:outputpanel>
+		</apex:pageBlockSectionItem>
+  
+	</apex:pageBlockSection>
+ 
+</apex:pageBlock>
+
+</apex:form>
+
+</apex:page>
