@@ -1,0 +1,83 @@
+<apex:component >
+<script type="text/javascript">
+/**
+ * MutationObserver provides a way to react to changes in a DOM.
+ * 
+ * Salesforce removes all assigned style classes from the dependent picklists. We have to fix it with some javascript
+ * tricks. The idea is to re-assign a style class to the dependent picklist after its structure was changed (ie. attributes removed, child
+ * elements added).
+ *
+ * For that we will use a cool technique with a "MutationObserver" object. Using it we will be able to catch every DOM change on the target
+ * element. For example if a "class" attribute removed from the element - re-assign it again.
+ */
+// Mutation object
+function registerMutations() {
+	var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+	
+	if (typeof MutationObserver != 'undefined') {
+		// Defining observer 
+		var observer = new MutationObserver(function(mutations) { 
+			mutations.forEach(function(mutation) {
+			    // Each time target DOMs are modified - re-assign it
+			    jQuery('#dependentField select').each(function( index ) {
+			    	if(!jQuery(this).hasClass('select2')) {
+				        jQuery(this).addClass('form-control input-sm select2');
+
+				        var selectVar = jQuery(this);
+				        if(selectVar.attr("disabled")) {
+							var parVar = jQuery(this).parent().parent();
+							parVar.find('.default').removeClass('requiredBlock');
+							parVar.find('.hiddenDependent').val("");
+				        } else {
+							var parVar = jQuery(this).parent().parent();
+							parVar.find('.default').addClass('requiredBlock');
+							parVar.find('.hiddenDependent').val("true");
+				        }
+			    	}
+			    });
+			});
+		});
+		
+		// get target object(s) for the observer
+		var myNodeList = document.querySelectorAll('#dependentField'); 
+		// Assigning observer to the dependent picklist(s)
+		for( var i=0; i < myNodeList.length; i++) {
+			observer.observe(myNodeList[i], {
+			    childList: true,
+			    subtree: true,
+			    attributes: true
+			});
+		}
+	}
+}
+/**
+ * When a re-render occurs, only the portion of the DOM that is set to rerender is actually re-rendered.
+ * Therefore any custom stylings on those elements are lost, such as class attributes.
+ * Additionally, any registered Mutations or bindings that you created on $(document).ready() are essentially lost for the portion of the DOM that was re-rendered.
+ * Wrapping the reestablishment of these custom attributes and Mutation registrations in a function allows us to maintain the custom stylings during user interaction.
+ *
+ * What we can do is call javascript on the onComplete attribute of something like a commandLink or an actionSupport tag to call a function to "re-bind" my Mutation handlers.
+ * 
+ */
+function rebuildDOM() {
+	// Reapply DOM attributes for dependent Select Fields
+    jQuery('#dependentField select').each(function( index ) {
+    	if(!jQuery(this).hasClass('select2')) {
+	        jQuery(this).addClass('form-control input-sm select2');
+	        var selectVar = jQuery(this);
+	        if(selectVar.attr("disabled")) {
+				var parVar = jQuery(this).parent().parent();
+				parVar.find('.default').removeClass('requiredBlock');
+				parVar.find('.hiddenDependent').val("");
+	        } else {
+				var parVar = jQuery(this).parent().parent();
+				parVar.find('.default').addClass('requiredBlock');
+				parVar.find('.hiddenDependent').val("true");
+	        }
+    	}
+    });
+    // Reregister MutationObserver for rebuilt DOM fields
+    registerMutations();
+}
+</script>
+</apex:component>

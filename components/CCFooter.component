@@ -1,0 +1,47 @@
+<apex:component >
+<apex:includeScript value="{!$Resource.acs_JQuery1_5_1}"/>
+<script type="text/javascript">
+	var $j = jQuery.noConflict();
+	// Get value of Case Status on detail page.
+	// This will be used to hide or display the Close and ReOpen buttons
+	var statusValue = $j('#cas7_ileinner').html();
+
+	//create an array of SObject collection with Name and KeyPrefix
+    var InlineEditDisabledObjects = [
+		SObject = {Name: "Case", KeyPrefix: "500"},
+		SObject = {Name: "Contact", KeyPrefix: "003"}
+    ];
+
+	//declare a function which calls sfdcPage.initInlineEdit passing false to disallow inlineediting
+	//call it on document.ready function
+	function disableInlineEdit() {
+		for(var i=0; i < InlineEditDisabledObjects.length; i++){
+			var SObject = InlineEditDisabledObjects[i];
+			if(window.location.pathname.indexOf(SObject.KeyPrefix) != -1){
+				if(sfdcPage.initInlineEdit){
+					sfdcPage.initInlineEdit(false);
+				}
+			}
+		}
+	}
+
+	$j(document).ready(function() {
+		disableInlineEdit();
+		if(statusValue == 'Closed') {
+			$j('input[name=close]').hide();
+			$j('input[name=newComment]').hide();
+			$j('input[name=attachFile]').hide();
+			$j('input[name=change_contact]').hide();
+		} else if(statusValue == 'Archived') {
+			$j('input[name=close]').hide();
+			$j('input[name="archive_case"]').hide();
+			$j('input[name=newComment]').hide();
+			$j('input[name=attachFile]').hide();
+			$j('input[name=change_contact]').hide();
+		} else {
+			$j('input[name="reopen_case"]').hide();
+			$j('input[name="archive_case"]').hide();
+		}
+	});
+</script>
+</apex:component>

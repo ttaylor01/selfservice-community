@@ -1,0 +1,49 @@
+<apex:component controller="CCHeaderController">
+	<style type="text/css">
+		<!-- Hide certain components on standard page layouts -->
+		.x-grid3-td-ACTION_COLUMN {display: none;}
+		.chatterfeedshell {display: none;}
+		.metadata {display: none;}
+		.feedLinks {display: none;}
+		.zen-navViaSearch' {display: none;}
+		.topNavTab {display: none;}
+		input[name="save_close"] {display: none;}
+		input[name="save_new"] {display: none;}
+		input[name="spell"] {display: none;}
+		
+		.alignleft {
+			float: left;
+		}
+		.alignright {
+			float: right;
+		}
+	</style>
+
+<div >
+	<div class="alignleft" style="position:relative; margin:10px; padding:10px; left:10px; right:10px; z-index:1;" >
+		<div class="alignleft" style="padding-left:10px; padding-right:10px;">
+		    <span style="margin-left: 5px;">
+		      <apex:image value="{!$Resource.acs_CommunityLogo2}" />
+		    </span>
+	    </div>
+	    <apex:outputPanel rendered="{!showAddress}" id="theAddress" layout="block" styleClass="alignright" style="padding-left:10px; padding-right:10px; color:#BCBEC0;">
+				Availity LLC<br/>
+				10752 Deerwood Park Blvd Suite 110<br/>
+				Jacksonville, FL 32256<br/>
+				United States of America
+		</apex:outputPanel>
+	</div>
+	<div class="alignright" style="position:relative; margin:10px; padding:10px; left:10px; right:10px; color:#BCBEC0;">
+		<fieldset style="color:#BCBEC0">
+			<legend style="color:#BCBEC0;">{!userName}</legend>
+			<b>Contact: <i>{!contactName}</i></b>&nbsp;&nbsp;&nbsp;&nbsp;
+			<b>Account: <i>{!accountName}</i></b>&nbsp;&nbsp;&nbsp;&nbsp;
+			<b>{!customerIdLabel}: <i>{!customerId}</i></b>
+		</fieldset>
+<!-- 
+		<apex:outputLink value="{!$Site.BaseUrl}/secur/logout.jsp?retUrl={!$Site.BaseUrl}/CCLoggedOut" styleClass="login alignright" style="color:#BCBEC0;">Logout</apex:outputLink>
+ -->
+		<apex:outputLink value="{!$Site.BaseUrl}/secur/logout.jsp?retUrl={!$Site.BaseUrl}/CustomCommunitieslogin" styleClass="login alignright" style="color:#BCBEC0;">Logout</apex:outputLink>
+	</div>
+</div>
+</apex:component>
