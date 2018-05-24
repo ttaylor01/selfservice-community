@@ -1,0 +1,73 @@
+<apex:page tabStyle="Support_Tickets__tab" controller="CCAddAttachment" sidebar="false" showHeader="true">
+<style>
+	.msg {
+		font-size:10px;
+		font-weight:bold;
+	}
+</style>
+
+<apex:sectionHeader title="Attach File" subtitle="Case {!caseNumber}"/>
+
+<apex:form id="form_Upload">
+<apex:pageBlock >
+	<apex:pageMessages />
+
+	<apex:pageBlockButtons >
+		<apex:commandButton action="{!back}" value="Cancel"/>
+	</apex:pageBlockButtons>
+
+	<apex:outputPanel layout="block" styleClass="container">
+        <table>
+        	<tr><td>&nbsp;</td><td></td><td></td></tr>
+        	<tr>
+        		<td>&nbsp;</td>
+        		<td align="left" colspan="2">
+        			<strong>1. Select the File</strong><br/>
+        			<apex:outputText value="Type the path of the file or click the Browse button to find the file." styleClass="msg"/>
+        		</td>
+        	</tr>
+        	<tr>
+        		<td>&nbsp;</td>
+        		<td align="left">
+					<apex:inputFile id="file_File" value="{!fileBody}" filename="{!fileName}"/>
+        		</td>
+        		<td></td>
+        	</tr>
+        	<tr><td>&nbsp;</td><td></td><td></td></tr>
+        	<tr>
+        		<td>&nbsp;</td>
+        		<td align="left" colspan="2">
+        			<strong>2. Click the "Attach File" button.</strong><br/>
+        			<apex:outputText value="When the upload is complete you will return to the previous page." styleClass="msg"/>
+        		</td>
+        	</tr>
+        	<tr>
+        		<td>&nbsp;</td>
+        		<td align="left">
+					<apex:commandButton id="uploadBtn" value="Attach File" action="{!processUpload}" />
+        		</td>
+        		<td></td>
+        	</tr>
+        </table>
+	</apex:outputPanel>
+<!-- 
+	<apex:pageBlockSection columns="1">
+  
+		<apex:pageBlockSectionItem >
+			<apex:outputLabel value="File" for="file_File1"/>
+			<apex:inputFile id="file_File1" value="{!fileBody}" filename="{!fileName}"/>
+		</apex:pageBlockSectionItem>
+  
+		<apex:pageBlockSectionItem >
+			<apex:outputLabel value="" for="uploadBtn1"/>
+			<apex:commandButton id="uploadBtn1" value="Attach File" action="{!processUpload}" />
+		</apex:pageBlockSectionItem>
+    
+	</apex:pageBlockSection>
+ --> 
+ 
+</apex:pageBlock>
+
+</apex:form>
+
+</apex:page>
